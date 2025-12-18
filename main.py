@@ -1,8 +1,7 @@
 import re
 from datetime import datetime
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout, QPlainTextEdit
 try:
     import fitz  # PyMuPDF for redaction
 except ModuleNotFoundError:
@@ -82,8 +81,8 @@ class PDFRedactionApp(QWidget):
 
         # Codes input
         codes_layout = QHBoxLayout()
-        codes_layout.addWidget(QLabel('输入提单号 (逗号分隔):'))
-        self.codes_entry = QLineEdit()
+        codes_layout.addWidget(QLabel('输入提单号 (分号或换行分隔):'))
+        self.codes_entry = QPlainTextEdit()
         codes_layout.addWidget(self.codes_entry)
         layout.addLayout(codes_layout)
 
@@ -104,11 +103,11 @@ class PDFRedactionApp(QWidget):
         if not pdf_path:
             QMessageBox.warning(self, '错误', '请选择PDF文件。')
             return
-        codes_input = self.codes_entry.text()
+        codes_input = self.codes_entry.toPlainText()
         if not codes_input:
             QMessageBox.warning(self, '错误', '请输入提单号。')
             return
-        specified_codes = [code.strip() for code in codes_input.split(',')]
+        specified_codes = [code.strip() for code in re.split(r'[;,\n]+', codes_input) if code.strip()]
 
         try:
             blocks, pairs, css_list, quantity_list, weight_list, doc = extract_codes(pdf_path)
