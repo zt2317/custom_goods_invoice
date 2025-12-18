@@ -49,14 +49,11 @@ def redact_codes(doc, lines_to_redact, output_path):
     for page_num in range(len(doc)):
         page = doc[page_num]
         for line in lines_to_redact:
-            # Split the block into lines and redact each line
-            for subline in line.split('\n'):
-                subline = subline.strip()
-                if subline:
-                    text_instances = page.search_for(subline)
-                    for inst in text_instances:
-                        # Add a redaction annotation (black rectangle)
-                        page.add_redact_annot(inst, fill=(0, 0, 0))  # Black fill
+            # Search for the entire line as a whole
+            text_instances = page.search_for(line)
+            for inst in text_instances:
+                # Add a redaction annotation (black rectangle)
+                page.add_redact_annot(inst, fill=(0, 0, 0))  # Black fill
         # Apply redactions
         page.apply_redactions()
     doc.save(output_path)
@@ -120,6 +117,11 @@ class PDFRedactionApp(QWidget):
                 if spec in pairs:
                     idx = pairs.index(spec)
                     lines_to_redact.append(blocks[idx])
+
+            print("Blocks to redact:")
+            for block in lines_to_redact:
+                print(block)
+                print("---")
 
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_path = f'{pdf_path[:-4]}_redacted_{timestamp}.pdf'
